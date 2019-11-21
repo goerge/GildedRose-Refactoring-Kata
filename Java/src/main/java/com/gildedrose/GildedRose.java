@@ -1,8 +1,10 @@
 package com.gildedrose;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
+
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 
 class GildedRose {
   private static final String AGED_BRIE = "Aged Brie";
@@ -15,72 +17,55 @@ class GildedRose {
     this.items = items;
   }
 
-  private static final Map<String, Consumer<Item>> UPDATER = new HashMap<String, Consumer<Item>>() {
-    {
-      put(AGED_BRIE, GildedRose::updateAgedBrie);
-      put(BACKSTAGE_PASS, GildedRose::updateBackstagePass);
-      put(SULFURAS, GildedRose::updateSulfaras);
-    }
-
-    @Override
-    public Consumer<Item> get(Object key) {
-      return super.getOrDefault(key, GildedRose::updateDefault);
-    }
-  };
+  private static final Map<String, Consumer<Item>> UPDATER = Map.of(
+    AGED_BRIE, GildedRose::updateAgedBrie,
+    BACKSTAGE_PASS, GildedRose::updateBackstagePass,
+    SULFURAS, GildedRose::updateSulfaras);
 
   public void updateQuality() {
     for (Item item : items) {
-      UPDATER.get(item.name).accept(item);
+      UPDATER.getOrDefault(item.name, GildedRose::updateDefault).accept(item);
     }
   }
 
   private static void updateDefault(Item item) {
-    item.sellIn = item.sellIn - 1;
-    if (item.quality > 0) {
-      item.quality = item.quality - 1;
-    }
+    item.sellIn--;
+    item.quality = decreaseQualityDownToZero(item.quality);
     if (item.sellIn < 0) {
-      if (item.quality > 0) {
-        item.quality = item.quality - 1;
-      }
+      item.quality = decreaseQualityDownToZero(item.quality);
     }
   }
 
   private static void updateAgedBrie(Item item) {
-    item.sellIn = item.sellIn - 1;
-    if (item.quality < 50) {
-      item.quality = item.quality + 1;
-    }
+    item.sellIn--;
+    item.quality = increaseQualityUpTo50(item.quality);
     if (item.sellIn < 0) {
-      if (item.quality < 50) {
-        item.quality = item.quality + 1;
-      }
+      item.quality = increaseQualityUpTo50(item.quality);
     }
   }
 
   private static void updateBackstagePass(Item item) {
-    if (item.quality < 50) {
-      item.quality = item.quality + 1;
-
-      if (item.sellIn < 11) {
-        if (item.quality < 50) {
-          item.quality = item.quality + 1;
-        }
-      }
-
-      if (item.sellIn < 6) {
-        if (item.quality < 50) {
-          item.quality = item.quality + 1;
-        }
-      }
+    item.sellIn--;
+    item.quality = increaseQualityUpTo50(item.quality);
+    if (item.sellIn < 10) {
+      item.quality = increaseQualityUpTo50(item.quality);
     }
-    item.sellIn = item.sellIn - 1;
-
+    if (item.sellIn < 5) {
+      item.quality = increaseQualityUpTo50(item.quality);
+    }
     if (item.sellIn < 0) {
       item.quality = 0;
     }
   }
 
   private static void updateSulfaras(Item item) {
+  }
+
+  private static int decreaseQualityDownToZero(int quality) {
+    return max(0, quality - 1);
+  }
+
+  private static int increaseQualityUpTo50(int quality) {
+    return min(quality + 1, 50);
   }
 }
