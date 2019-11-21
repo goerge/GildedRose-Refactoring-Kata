@@ -1,6 +1,5 @@
 package com.gildedrose;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -18,22 +17,14 @@ class GildedRose {
     this.items = items;
   }
 
-  private static final Map<String, Consumer<Item>> UPDATER = new HashMap<String, Consumer<Item>>() {
-    {
-      put(AGED_BRIE, GildedRose::updateAgedBrie);
-      put(BACKSTAGE_PASS, GildedRose::updateBackstagePass);
-      put(SULFURAS, GildedRose::updateSulfaras);
-    }
-
-    @Override
-    public Consumer<Item> get(Object key) {
-      return super.getOrDefault(key, GildedRose::updateDefault);
-    }
-  };
+  private static final Map<String, Consumer<Item>> UPDATER = Map.of(
+    AGED_BRIE, GildedRose::updateAgedBrie,
+    BACKSTAGE_PASS, GildedRose::updateBackstagePass,
+    SULFURAS, GildedRose::updateSulfaras);
 
   public void updateQuality() {
     for (Item item : items) {
-      UPDATER.get(item.name).accept(item);
+      UPDATER.getOrDefault(item.name, GildedRose::updateDefault).accept(item);
     }
   }
 
