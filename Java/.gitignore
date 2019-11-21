@@ -1,6 +1,7 @@
 .idea/
 *.iml
 target/
+out/
 
 .classpath
 .project
@@ -11,3 +12,4 @@ bin/
 .gradle
 /build/
 
+/.jqwik-database
